@@ -1,0 +1,6 @@
+service:
+  name: certificategen
+
+plugins:
+  - serverless-offline
+  - serverless-webpack
