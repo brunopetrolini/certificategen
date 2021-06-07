@@ -3,6 +3,7 @@ import handlebars from 'handlebars'
 import dayjs from 'dayjs'
 import path from 'path'
 import fs from 'fs'
+import { S3 } from 'aws-sdk'
 
 import { document } from '../utils/dynamodbClient'
 
@@ -59,7 +60,7 @@ export const handle = async (event) => {
   const page = await browser.newPage()
   await page.setContent(content)
   
-  await page.pdf({
+  const pdf = await page.pdf({
     format: 'a4',
     landscape: true,
     path: process.env.IS_OFFLINE ? 'certificate.pdf' : null,
@@ -69,11 +70,22 @@ export const handle = async (event) => {
 
   await browser.close()
 
-  // salvar no S3
+  const s3 = new S3()
+
+  await s3.putObject({
+    Bucket: 'certificategen-stg',
+    Key: `${id}.pdf`,
+    ACL: 'public-read',
+    Body: pdf,
+    ContentType: 'application/pdf'
+  }).promise()
 
   return {
     statusCode: 201,
-    body: JSON.stringify({ message: 'Certificate Created' }),
+    body: JSON.stringify({ 
+      message: 'Certificate Created',
+      url: `https://certificategen-stg.s3-sa-east-1.amazonaws.com/${id}.pdf` 
+    }),
     headers: { 'Content-Type': 'application/json' } 
   }
 }
