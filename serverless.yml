@@ -25,13 +25,13 @@ provider:
   runtime: nodejs14.x
   iamRoleStatements:
     - Effect: Allow
-      Actions:
+      Action:
         - dynamodb:"*"
-      Resources: "*"
+      Resource: "*"
     - Effect: Allow
       Action:
         - s3:*
-      Resources: "*"
+      Resource: "*"
 
 functions:
   generateCertificate:
